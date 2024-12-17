@@ -122,9 +122,6 @@ func NewMemberListPool(ctx context.Context, conf MemberListPoolConfig) (*MemberL
 	config.Events = m.events
 	config.AdvertiseAddr = host
 	config.AdvertisePort = port
-	if conf.MemberListBindPort > 0 {
-		config.BindPort = conf.MemberListBindPort
-	}
 
 	// Configure the memberlist bind address and port if MemberListBindAddress
 	// is not empty
