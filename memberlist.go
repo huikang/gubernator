@@ -48,6 +48,9 @@ type MemberListPoolConfig struct {
 	// (Required) This is the peer information that will be advertised to other members
 	Advertise PeerInfo
 
+	// (Optional) The bind port for the memberlist config.
+	MemberListBindPort int
+
 	// (Required) This is the address:port the member list protocol listen for other members on
 	MemberListAddress string
 
@@ -118,6 +121,9 @@ func NewMemberListPool(ctx context.Context, conf MemberListPoolConfig) (*MemberL
 	config.Events = m.events
 	config.AdvertiseAddr = host
 	config.AdvertisePort = port
+	if conf.MemberListBindPort > 0 {
+		config.BindPort = conf.MemberListBindPort
+	}
 
 	// Enable gossip encryption if a key is defined.
 	if len(conf.EncryptionConfig.SecretKeys) > 0 {
