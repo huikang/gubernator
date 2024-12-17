@@ -48,8 +48,9 @@ type MemberListPoolConfig struct {
 	// (Required) This is the peer information that will be advertised to other members
 	Advertise PeerInfo
 
-	// (Optional) The bind port for the memberlist config.
-	MemberListBindPort int
+	// (Optional) The bind MemberListBindAddress that will listen for the memberlist gossip.
+	// Default is 0.0.0.0:7946 in memberlist package.
+	MemberListBindAddress string
 
 	// (Required) This is the address:port the member list protocol listen for other members on
 	MemberListAddress string
@@ -123,6 +124,28 @@ func NewMemberListPool(ctx context.Context, conf MemberListPoolConfig) (*MemberL
 	config.AdvertisePort = port
 	if conf.MemberListBindPort > 0 {
 		config.BindPort = conf.MemberListBindPort
+	}
+
+	// Configure the memberlist bind address and port if MemberListBindAddress
+	// is not empty
+	if conf.MemberListBindAddress != "" {
+		bindHost, bindPort, err := splitAddress(conf.MemberListBindAddress)
+		if err != nil {
+			return nil, errors.Wrap(err, "MemberListBindAddress=`%s` is invalid;")
+		}
+		// Member list requires the address to be an ip address
+		if ip := net.ParseIP(bindHost); ip == nil {
+			addrs, err := net.LookupHost(bindHost)
+			if err != nil {
+				return nil, errors.Wrapf(err, "while preforming bind host lookup for '%s'", bindHost)
+			}
+			if len(addrs) == 0 {
+				return nil, errors.Wrapf(err, "net.LookupHost() returned no bind addresses for '%s'", bindHost)
+			}
+			bindHost = addrs[0]
+		}
+		config.BindAddr = bindHost
+		config.BindPort = bindPort
 	}
 
 	// Enable gossip encryption if a key is defined.
