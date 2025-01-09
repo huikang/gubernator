@@ -406,7 +406,8 @@ func (s *Daemon) SetPeers(in []PeerInfo) {
 	copy(peers, in)
 
 	for i, p := range peers {
-		if s.conf.GRPCListenAddress == p.GRPCAddress {
+		// if s.conf.GRPCListenAddress == p.GRPCAddress {
+		if s.conf.AdvertiseAddress == p.GRPCAddress {
 			peers[i].IsOwner = true
 		}
 	}
